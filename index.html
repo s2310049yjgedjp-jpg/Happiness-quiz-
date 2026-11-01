@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幸福度診断アプリ（保存機能付き）</title>
+    <title>幸福度診断アプリ</title>
     <style>
         :root {
             --primary-color: #6200ee;
@@ -197,7 +197,7 @@
 <div class="container">
     <div class="header-card">
         <h1>幸福度診断</h1>
-        <p class="description">直感で現在の状態に最も近いものを選んでください（1〜5段階評価 / 全10問）。回答すると自動でスプレッドシートに結果が保存されます。</p>
+        <p class="description">直感で現在の状態に最も近いものを選んでください（1〜5段階評価 / 全10問）。10問すべてに回答すると、自動でスプレッドシートに結果が保存されます。</p>
     </div>
  
     <div class="scoreboard">
@@ -218,7 +218,7 @@
 </div>
  
 <script>
-    // ★ ここにステップ1で取得したGoogle Apps ScriptのウェブアプリURLを貼り付けてください
+    // ★ ここにご自身のGoogle Apps ScriptのウェブアプリURLを貼り付けてください
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwoxDxaZKHQ_KUOlWDyFL5svU7q4YkQOUvlVilRvgv8Uib88TSFIz39NLB8--LKJhAbSg/exec';
  
     const questions = [
@@ -234,29 +234,31 @@
         "「自分は幸せな人間だ」と自信を持って言うことができる。"
     ];
  
-    const labels = ["1. 全くそう思わない", "2. あまりそう思わない", "3. どちらとも言えない", "4. まあそう思う", "5. 非常にそう思う"];
+    const labels = [
+        "1. 全くそう思わない",
+        "2. あまりそう思わない",
+        "3. どちらとも言えない",
+        "4. まあそう思う",
+        "5. 非常にそう思う"
+    ];
  
     function initQuiz() {
         const container = document.getElementById("questions-container");
         container.innerHTML = "";
  
         questions.forEach((qText, qIndex) => {
-            let optionsHtml = '';
+            let optionsHtml = "";
             for (let i = 1; i <= 5; i++) {
-                optionsHtml += `
-                    <label class="option-label" id="label-${qIndex}-${i}">
-                        <input type="radio" name="q${qIndex}" value="${i}" onchange="updateScore(${qIndex}, ${i})">
-                        ${labels[i-1]}
-                    </label>
-                `;
+                optionsHtml += '<label class="option-label" id="label-' + qIndex + '-' + i + '">';
+                optionsHtml += '<input type="radio" name="q' + qIndex + '" value="' + i + '" onchange="updateScore(' + qIndex + ', ' + i + ')">';
+                optionsHtml += labels[i-1];
+                optionsHtml += '</label>';
             }
  
             const card = document.createElement("div");
             card.className = "question-card";
-            card.innerHTML = `
-                <div class="question-title">問 ${qIndex + 1}. ${qText}</div>
-                <div class="options-group">${optionsHtml}</div>
-            `;
+            card.innerHTML = '<div class="question-title">問 ' + (qIndex + 1) + '. ' + qText + '</div>' +
+                             '<div class="options-group">' + optionsHtml + '</div>';
             container.appendChild(card);
         });
     }
@@ -268,11 +270,13 @@
         userAnswers[qIndex] = value;
  
         for (let i = 1; i <= 5; i++) {
-            const lbl = document.getElementById(`label-${qIndex}-${i}`);
-            if (i === value) {
-                lbl.classList.add("selected");
-            } else {
-                lbl.classList.remove("selected");
+            const lbl = document.getElementById("label-" + qIndex + "-" + i);
+            if (lbl) {
+                if (i === value) {
+                    lbl.classList.add("selected");
+                } else {
+                    lbl.classList.remove("selected");
+                }
             }
         }
  
@@ -317,7 +321,7 @@
  
     function sendDataToSpreadsheet(score) {
         if (GAS_URL.includes('YOUR_GOOGLE_APPS_SCRIPT')) {
-            document.getElementById("save-status").innerText = "⚠️ スプレッドシートのURLが設定されていません（コード内を確認してください）";
+            document.getElementById("save-status").innerText = "⚠️ スプレッドシートのURLが設定されていません";
             return;
         }
  
@@ -333,7 +337,4 @@
  
         fetch(GAS_URL, {
             method: 'POST',
-            mode: 'no-cors', // GASとのクロスドメイン通信用
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            mode: '
